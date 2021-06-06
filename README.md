@@ -10,15 +10,15 @@ For installation you'll need:
 - Yarn or NPM
 - Notepad/Visual Studio Code/some other text editor for configuration file
 
-You'll need to create a new ```config.json``` file in the project directory (not included for security reasons). This is used to set and customise various options.
+You'll need to create a new ```config.json``` file in the project directory (not included for security reasons). This is used to set and customise various options. If you're running this on AWS/Heroku/Azure etc, you can skip the config.json file and add these as enviroment variables.
 
 #### config.json Template
 ```
 {
-    "LIFX-token": "your-own-token",
+    "LIFXToken": "your-own-token",
     "postcode" : "3000",
-    "light-selector": "all",
-    "refresh-interval" : 60000,
+    "lightSelector": "all",
+    "refreshInterval" : 60000,
     "safeColor" : "#1C7C54",
     "warningColor" : "#F9CB40",
     "dangerColor" : "#F04A00",
@@ -31,10 +31,10 @@ You'll need to create a new ```config.json``` file in the project directory (not
 }
 ```
 
-```LIFX-token```: (string) Your personal LIFX API token. Refer to LIFX's own documenation for more information.\
-```light-selector```: (string) LIFX API selector used to choose what light(s) to control. Refer to LIFX's documentation for more info.\
+```LIFXToken```: (string) Your personal LIFX API token. Refer to LIFX's own documenation for more information.\
+```lightSelector```: (string) LIFX API selector used to choose what light(s) to control. Refer to LIFX's documentation for more info.\
 ```postcode```: (string) The postcode the area you wish to monitor prices for.\
-```refresh-interval```:  (number) The amount of times per-millisecond to check prices.\
+```refreshInterval```:  (number) The amount of times per-millisecond to check prices.\
 ```safeColor, warningColor, danger-color, extremeDangerColor```: (string) The colours for the light when energy is cheap, mild, expensive and very expensive respectively. Refer to LIFX's documentation for all supported formats.\
 ```warningRange, dangerRange, extremeDangerRange```: (number) The thresholds for each usage tier.
 ```lightBrightness```: (float) A value between 0.0 and 1.0 that represents the brightness of the light(s) controlled.\
