@@ -16,6 +16,8 @@ const WARNING_COLOR = nconf.get('warningColor') ?? "#F9CB40";
 const DANGER_COLOR = nconf.get('dangerColor') ?? "#F04A00";
 const EXTREME_DANGER_COLOR = nconf.get('extremeDangerColor') ?? "#FF101F";
 
+const COLORS = [ SAFE_COLOR, WARNING_COLOR, DANGER_COLOR, EXTREME_DANGER_COLOR ];
+
 const LIGHT_TRANS_DURATION = nconf.get('lightTransitionDuration') ?? 1.0
 const LIGHT_BRIGHTNESS = nconf.get('lightBrightness') ?? 1.0
 
@@ -55,10 +57,8 @@ setLightBasedOnPriceAsync()
 async function setLightBasedOnPriceAsync() {
     try {
         const price = await getLatestPriceRangeAsync();
-
-        let color = getColorForLight(price);
-
-        await setLightColorAsync(color);
+        
+        await setLightColorAsync(COLORS[price]);
     }
     catch (ex) {
         throw new Error(ex);
