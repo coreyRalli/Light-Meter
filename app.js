@@ -57,7 +57,7 @@ setLightBasedOnPriceAsync()
 async function setLightBasedOnPriceAsync() {
     try {
         const price = await getLatestPriceRangeAsync();
-        
+
         await setLightColorAsync(COLORS[price]);
     }
     catch (ex) {
@@ -105,7 +105,7 @@ async function setLightColorAsync(color) {
     try {
         const response = await fetch("https://api.lifx.com/v1/lights/" + LIGHT_SELECTOR + "/state", {
             headers: {
-                'Authorization' : 'Bearer ' + nconf.get('LIFX-token'),
+                'Authorization' : 'Bearer ' + nconf.get('LIFXToken'),
                 'Content-Type' : 'application/json'
             },
             method: 'PUT',
