@@ -18,14 +18,14 @@ const EXTREME_DANGER_COLOR = nconf.get('extremeDangerColor') ?? "#FF101F";
 
 const COLORS = [ SAFE_COLOR, WARNING_COLOR, DANGER_COLOR, EXTREME_DANGER_COLOR ];
 
-const LIGHT_TRANS_DURATION = nconf.get('lightTransitionDuration') ?? 1.0
-const LIGHT_BRIGHTNESS = nconf.get('lightBrightness') ?? 1.0
+const LIGHT_TRANS_DURATION = parseFloat(nconf.get('lightTransitionDuration')) ?? 1.0
+const LIGHT_BRIGHTNESS = parseFloat(nconf.get('lightBrightness')) ?? 1.0
 
-const REFRESH_INTERVAL = nconf.get("refreshInterval") ?? 60000
+const REFRESH_INTERVAL = parseInt(nconf.get("refreshInterval")) ?? 60000
 
-const WARNING_RANGE = nconf.get('warningRange') ?? 20;
-const DANGER_RANGE = nconf.get('dangerRange') ?? 30;
-const EXTREME_DANGER_RANGE = nconf.get('extremeDangerRange') ?? 40;
+const WARNING_RANGE = parseInt(nconf.get('warningRange')) ?? 20;
+const DANGER_RANGE = parseInt(nconf.get('dangerRange')) ?? 30;
+const EXTREME_DANGER_RANGE = parseInt(nconf.get('extremeDangerRange')) ?? 40;
 
 const POSTCODE = nconf.get('postcode');
 if (typeof POSTCODE == 'undefined')
