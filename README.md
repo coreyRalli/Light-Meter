@@ -1,6 +1,6 @@
 # Light Meter
 
-## A simple utility allowing Amber Electirty and LIFX users to be more mindful of their energy usage during peak times and save money.
+## A simple utility allowing Amber Electricity and LIFX users to be more mindful of their energy usage during peak times and save money.
 
 ### How to use
 ---
@@ -10,7 +10,7 @@ For installation you'll need:
 - Yarn or NPM
 - Notepad/Visual Studio Code/some other text editor for configuration file
 
-You'll need to create a new ```config.json``` file in the project directory (not included for security reasons). This is used to set and customise various options. If you're running this on AWS/Heroku/Azure etc, you can skip the config.json file and add these as enviroment variables.
+If running locally, you'll need to create a new ```config.json``` or ```.env``` file in the project directory (not included for security reasons). This is used to set and customise various options. Server-side it's recomended to set these enviroment variables.
 
 #### config.json Template
 ```
@@ -31,14 +31,14 @@ You'll need to create a new ```config.json``` file in the project directory (not
 }
 ```
 
-```LIFXToken```: (string) Your personal LIFX API token. Refer to LIFX's own documenation for more information.\
-```lightSelector```: (string) LIFX API selector used to choose what light(s) to control. Refer to LIFX's documentation for more info.\
-```postcode```: (string) The postcode the area you wish to monitor prices for.\
-```refreshInterval```:  (number) The amount of times per-millisecond to check prices.\
-```safeColor, warningColor, danger-color, extremeDangerColor```: (string) The colours for the light when energy is cheap, mild, expensive and very expensive respectively. Refer to LIFX's documentation for all supported formats.\
-```warningRange, dangerRange, extremeDangerRange```: (number) The thresholds for each usage tier.
-```lightBrightness```: (float) A value between 0.0 and 1.0 that represents the brightness of the light(s) controlled.\
-```lightTransitionDuration```: (float) A value between 0.0 and 1.0 that represents the speed in which the lights(s) change colour or turn on.
+```LIFXToken```: (string) (required) Your personal LIFX API token. Refer to LIFX's own documenation for more information.\
+```lightSelector```: (string) (required) LIFX API selector used to choose what light(s) to control. Refer to LIFX's documentation for more info.\
+```postcode```: (string) (required) The postcode the area you wish to monitor prices for.\
+```refreshInterval```:  (number) (optional) The amount of times per-millisecond to check prices.\
+```safeColor, warningColor, danger-color, extremeDangerColor```: (string) (optional) The colours for the light when energy is cheap, mild, expensive and very expensive respectively. Refer to LIFX's documentation for all supported formats.\
+```warningRange, dangerRange, extremeDangerRange```: (number) (optional) The thresholds for each usage tier.
+```lightBrightness```: (float) (optional) A value between 0.0 and 1.0 that represents the brightness of the light(s) controlled.\
+```lightTransitionDuration```: (float) (optional) A value between 0.0 and 1.0 that represents the speed in which the lights(s) change colour or turn on.
 
 
 Install the various depencies:\
@@ -48,10 +48,10 @@ Install the various depencies:\
 And to actually run:\
 ```node app```
 
-(Once it's up and running, there's nothing more you need to do. I recomend running this on a raspberry pi to save power!)
+(Once it's up and running, there's nothing more you need to do. I reccomend running this on a raspberry pi to save power!)
 
 ### Why doesn't the price match what's on the app?
-Speaking with Amber customer support (they're really good!), the current API provides the latest price within the 5 minute window the request was made (along with forecasts and a number of previous confirmed prices in 30 minute windows) while the app uses a weighted average of previous, current and forecasted prices to the arrive at the number you see on their app/website.
+Speaking with Amber customer support (they're pretty good!) the current API provides the latest price within the 5 minute window the request was made along with forecasts and a number of previously confirmed prices in 30 minute windows, while the app uses a weighted average of previous, current and forecasted prices to the arrive at the number you see on their app/website. Light-Meter uses the current 5 minute window price.
 
 This utility is more meant to act as a general physical reminder to be aware of your energy usage (something I could of used when I cooked dinner in the air-fryer during a $7.50 period 😢).
 
