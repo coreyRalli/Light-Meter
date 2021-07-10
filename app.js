@@ -16,11 +16,11 @@ const LIFX_TOKEN = nconf.get('LIFXToken');
 const IFTTT_KEY = nconf.get('IFTTTMakerKey');
 const IFTTT_POWER_ENABLED = nconf.get('IFTTTPowerChangeEnabled') ?? false;
 const IFTTT_COLOR_ENABLED = nconf.get('IFTTTColorChangeEnabled') ?? false;
-const IFTTT_POWER_ON_THRESHOLD = parseInt(nconf.get('IFTTTPowerOnThreshold')) ?? 0;
-const IFTTT_POWER_OFF_THRESHOLD = parseInt(nconf.get('IFTTTPowerOffThreshold')) ?? 3;
+const IFTTT_POWER_ON_THRESHOLD = nconf.get('IFTTTPowerOnThreshold') ?? 0;
+const IFTTT_POWER_OFF_THRESHOLD = nconf.get('IFTTTPowerOffThreshold') ?? 3;
 
-console.log(IFTTT_POWER_ON_THRESHOLD);
-console.log(IFTTT_POWER_OFF_THRESHOLD);
+console.log("Power on Threshold: " + IFTTT_POWER_ON_THRESHOLD);
+console.log("Power off Threshold: " + IFTTT_POWER_OFF_THRESHOLD);
 
 if (LIFX_ON) {
     if (typeof LIFX_TOKEN == "undefined")
@@ -81,13 +81,17 @@ async function setLightBasedOnPriceAsync() {
     try {
         const price = await getLatestPriceRangeAsync();
 
-        if (price != cachedRange) {
+        console.log("The current price range: " + price.range + ", the cached range: " + cachedRange);
+
+        if (price.range != cachedRange) {
             if (LIFX_ON) {
                 await setLightColorAsync(COLORS[price.range]);
             }
 
             if (IFTTT_ON) {
                 await activateIFTTTWebhookAsync(price.range, price.current);
+
+                console.log("IFTTT Webhook Complete!");
             }
         }
 
