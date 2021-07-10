@@ -1,15 +1,50 @@
 const nconf = require('nconf');
 const fetch = require('node-fetch');
 
-if (process.env.NODE_ENV !== 'production') {
-    console.log(require('dotenv').config())
-}
-
 let interval;
 
-nconf.argv()
-    .env()
-    .file({ file: './config.json' });
+nconf   .env()
+        .file({ file: './config.json' });
+
+const LIFX_ON = nconf.get("LIFXSupport") ?? false;
+const IFTTT_ON = nconf.get("IFTTTSupport") ?? false;
+
+const POSTCODE = nconf.get('postcode');
+const LIGHT_SELECTOR = nconf.get('lightSelector');
+const LIFX_TOKEN = nconf.get('LIFXToken');
+
+const IFTTT_KEY = nconf.get('IFTTTMakerKey');
+const IFTTT_POWER_ENABLED = nconf.get('IFTTTPowerChangeEnabled') ?? false;
+const IFTTT_COLOR_ENABLED = nconf.get('IFTTTColorChangeEnabled') ?? false;
+const IFTTT_POWER_ON_THRESHOLD = parseInt(nconf.get('IFTTTPowerOnThreshold')) ?? 0;
+const IFTTT_POWER_OFF_THRESHOLD = parseInt(nconf.get('IFTTTPowerOffThreshold')) ?? 3;
+
+console.log(IFTTT_POWER_ON_THRESHOLD);
+console.log(IFTTT_POWER_OFF_THRESHOLD);
+
+if (LIFX_ON) {
+    if (typeof LIFX_TOKEN == "undefined")
+        throw new Error("No 'LIFXToken' property in config.json file or enviroment variables.");
+    
+    if (typeof POSTCODE == 'undefined')
+        throw new Error("No 'postcode' property in config.json file");
+    if (POSTCODE == "" || typeof POSTCODE != 'string')
+        throw new Error("Empty or non-string 'postcode' property in config.json file or enviroment variables.");
+
+    if (typeof LIGHT_SELECTOR == 'undefined')
+        throw new Error("No 'light-selector' property in config.json file");
+    if (LIGHT_SELECTOR == "" || typeof LIGHT_SELECTOR != 'string')
+        throw new Error("Empty or non-string 'light-selector' property in config.json file or enviroment variables.");
+}
+
+if (IFTTT_ON) {
+    if (typeof IFTTT_KEY == "undefined")
+        throw new Error("No 'IFTTTMakerKey property in config.json file or enviroment variables");
+}
+
+if (!IFTTT_ON && !LIFX_ON) {
+    throw new Error('No smart device service connected! Check README file on how to turn on LIFX and/or IFTTT support');
+}
 
 const SAFE_COLOR = nconf.get('safeColor') ?? "#1C7C54";
 const WARNING_COLOR = nconf.get('warningColor') ?? "#F9CB40";
@@ -27,30 +62,18 @@ const WARNING_RANGE = parseInt(nconf.get('warningRange')) ?? 20;
 const DANGER_RANGE = parseInt(nconf.get('dangerRange')) ?? 30;
 const EXTREME_DANGER_RANGE = parseInt(nconf.get('extremeDangerRange')) ?? 40;
 
-const POSTCODE = nconf.get('postcode');
-if (typeof POSTCODE == 'undefined')
-        throw new Error("No 'postcode' property in config.json file");
-if (POSTCODE == "" || typeof POSTCODE != 'string')
-        throw new Error("Empty or non-string 'postcode' property in config.json file");
-
-const LIGHT_SELECTOR = nconf.get('lightSelector');
-
-if (typeof LIGHT_SELECTOR == 'undefined')
-        throw new Error("No 'light-selector' property in config.json file");
-if (LIGHT_SELECTOR == "" || typeof LIGHT_SELECTOR != 'string')
-        throw new Error("Empty or non-string 'light-selector' property in config.json file");
-
+let cachedRange = -1;
 
 setLightBasedOnPriceAsync()
 .then(() => {
     interval = setInterval(() => {
-        setLightBasedOnPriceAsync()
+        setLightBasedOnPriceAsync();
     }, REFRESH_INTERVAL)
 
     console.log("Set-up is complete. You don't need to do anything else!")
 })
 .catch((ex) => {
-    console.log(ex)
+    console.log(ex);
 })
 
 // Functions
@@ -58,22 +81,21 @@ async function setLightBasedOnPriceAsync() {
     try {
         const price = await getLatestPriceRangeAsync();
 
-        await setLightColorAsync(COLORS[price]);
+        if (price != cachedRange) {
+            if (LIFX_ON) {
+                await setLightColorAsync(COLORS[price.range]);
+            }
+
+            if (IFTTT_ON) {
+                await activateIFTTTWebhookAsync(price.range, price.current);
+            }
+        }
+
+        cachedRange = price.range;
     }
     catch (ex) {
         throw new Error(ex);
     }
-}
-
-function getColorForLight(range) {
-    if (range == 0)
-        return SAFE_COLOR;
-    if (range == 1)
-        return WARNING_COLOR;
-    if (range == 2)
-        return DANGER_COLOR;
-
-    return EXTREME_DANGER_COLOR;
 }
 
 async function getLatestPriceRangeAsync() {
@@ -82,36 +104,74 @@ async function getLatestPriceRangeAsync() {
 
         const latestPrice = grabLatestPrice(prices.variablePrices);
 
+        let range = 0;
+
         let calculatedPrice = parseFloat(prices.staticPrices.totalfixedKWHPrice) + (parseFloat(prices.staticPrices.lossFactor) * parseFloat(latestPrice.wholesaleKWHPrice))
-        calculatedPrice = Math.floor(calculatedPrice);
+        calculatedPrice = Math.round(calculatedPrice);
 
         console.log("The calculated usage price as of: " + new Date() +  " is " + calculatedPrice + ' cents per kWh');
 
-        if (calculatedPrice < WARNING_RANGE)
-            return 0 // Normal
-        else if (calculatedPrice >= WARNING_RANGE && calculatedPrice < DANGER_RANGE)
-            return 1 // Medium
+        if (calculatedPrice >= WARNING_RANGE && calculatedPrice < DANGER_RANGE)
+            range =  1; // Medium
         else if (calculatedPrice >= DANGER_RANGE && calculatedPrice < EXTREME_DANGER_RANGE)
-            return 2 // High
+            range = 2; // High
         else
-            return 3 // Extreme
+            range = 3; // Extreme
+
+        return { range, current: latestPrice }
     }
     catch(ex) {
         throw new Error('Something went wrong');
     }
 }
 
+async function activateIFTTTWebhookAsync(range, price) {
+    let actionsToPerform = [];
+
+    if (IFTTT_COLOR_ENABLED)
+        actionsToPerform.push("price_change");
+
+    if (IFTTT_POWER_ENABLED) {
+        if (price == IFTTT_POWER_ON_THRESHOLD) {
+            actionsToPerform.push("power_on");
+        } else if (price == IFTTT_POWER_OFF_THRESHOLD) {
+            actionsToPerform.push("power_off");
+        }
+    }
+
+    for (let a in actionsToPerform) {
+        const url = `https://maker.ifttt.com/trigger/${actionsToPerform[a]}/with/key/${IFTTT_KEY}`;
+
+        console.log(url);
+
+        const response = await fetch(url, {
+            headers: {
+                'Content-Type' : 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify({
+                value1: COLORS[range],
+                value2: price,
+                value3: range
+            })
+        });
+
+        if (response.status != 200)
+            throw new Error("Something went wrong while")
+    }
+}
+
 async function setLightColorAsync(color) {
     try {
-        const response = await fetch("https://api.lifx.com/v1/lights/" + LIGHT_SELECTOR + "/state", {
+        const response = await fetch(`https://api.lifx.com/v1/lights/${LIGHT_SELECTOR}/state`, {
             headers: {
-                'Authorization' : 'Bearer ' + nconf.get('LIFXToken'),
+                'Authorization' : 'Bearer ' + LIFX_TOKEN,
                 'Content-Type' : 'application/json'
             },
             method: 'PUT',
             body: JSON.stringify({
                 power: 'on',
-                color: color,
+                color,
                 brightness: LIGHT_BRIGHTNESS,
                 duration: LIGHT_TRANS_DURATION
             })
