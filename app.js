@@ -97,7 +97,7 @@ async function setLightBasedOnPriceAsync() {
 
         cachedPrice = price.range;
 
-        console.log(cachedPrice);
+        console.log("The new cached price range is: " + cachedPrice);
     }
     catch (ex) {
         console.log(ex);
