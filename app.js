@@ -62,6 +62,8 @@ const WARNING_RANGE = parseInt(nconf.get('warningRange')) ?? 20;
 const DANGER_RANGE = parseInt(nconf.get('dangerRange')) ?? 30;
 const EXTREME_DANGER_RANGE = parseInt(nconf.get('extremeDangerRange')) ?? 40;
 
+let cachedPrice = -1;
+
 setLightBasedOnPriceAsync()
 .then(() => {
     interval = setInterval(() => {
@@ -79,15 +81,21 @@ async function setLightBasedOnPriceAsync() {
     try {
         const price = await getLatestPriceRangeAsync();
 
-        if (LIFX_ON) {
-            await setLightColorAsync(COLORS[price.range]);
+        if (cachedPrice != price.range) {
+            if (LIFX_ON) {
+                await setLightColorAsync(COLORS[price.range]);
+            }
+    
+            if (IFTTT_ON) {
+                await activateIFTTTWebhookAsync(price.range, price.current);
+    
+                console.log("IFTTT Webhook Complete!");
+            }
         }
 
-        if (IFTTT_ON) {
-            await activateIFTTTWebhookAsync(price.range, price.current);
+        cachedPrice = price.range;
 
-            console.log("IFTTT Webhook Complete!");
-        }
+        console.log(cachedPrice);
     }
     catch (ex) {
         throw new Error(ex);
@@ -111,7 +119,7 @@ async function getLatestPriceRangeAsync() {
             range =  1; // Medium
         else if (calculatedPrice >= DANGER_RANGE && calculatedPrice < EXTREME_DANGER_RANGE)
             range = 2; // High
-        else
+        else if (calculatedPrice > EXTREME_DANGER_RANGE)
             range = 3; // Extreme
 
         return { range, current: latestPrice }
