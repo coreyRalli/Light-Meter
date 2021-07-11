@@ -84,6 +84,8 @@ async function setLightBasedOnPriceAsync() {
         if (cachedPrice != price.range) {
             if (LIFX_ON) {
                 await setLightColorAsync(COLORS[price.range]);
+
+                console.log("Light color successfully set!");
             }
     
             if (IFTTT_ON) {
@@ -98,6 +100,8 @@ async function setLightBasedOnPriceAsync() {
         console.log(cachedPrice);
     }
     catch (ex) {
+        console.log(ex);
+
         throw new Error(ex);
     }
 }
@@ -184,7 +188,7 @@ async function setLightColorAsync(color) {
         const responeJSON = await response.json();
 
         if (response.status != 200 && response.status != 207) {
-            throw new Error("Somthing went wrong while making request");
+            throw new Error("Somthing went wrong while making request. The error status is: " + response.status + " and the body is: " + JSON.stringify(responeJSON));
         }
 
         if (responeJSON.results[0]?.status == 'timed_out')
