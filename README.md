@@ -75,9 +75,11 @@ Value2 - The current price.\
 Value3 - The current price range.
 
 ### Why doesn't the price match what's on the app?
-Speaking with Amber customer support (they're pretty good!) the current API provides the latest price within the 5 minute window the request was made along with forecasts and a number of previously confirmed prices in 30 minute windows, while the app uses a weighted average of previous, current and forecasted prices to the arrive at the number you see on their app/website. Light-Meter uses the current 5 minute window price, calculating with the formula:
+Light-Meter currently uses the public-facing older API that provides the latest price within the 5 minute window the request was made along with forecasts and a number of previously confirmed prices in 30 minute windows, while the app uses a weighted average of previous, current and forecasted prices to the arrive at the number you see on their app/website. Light-Meter uses the current 5 minute window price, calculating with the formula:
 
 ```Fixed kWh Price + (loss factor * wholesale kWh price within the past 5 minutes)```
+
+Light-Meter will be updated to use the newer, customer-facing API soon.
 
 This utility is more meant to act as a general physical reminder to be aware of your energy usage (something I could of used when I cooked dinner in the air-fryer during a $7.50 period 😢).
 
