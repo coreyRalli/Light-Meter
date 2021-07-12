@@ -1,6 +1,6 @@
 # Light Meter
 
-## A simple utility allowing [Amber Electric](https://www.amber.com.au/) users to be more mindful of their energy usage during peak times through and save money. Supports [LIFX Lights](https://www.lifx.com.au/) directly and other smart lights and smart plugs through [IFTTT Webhooks](https://ifttt.com/maker_webhooks).
+## A simple utility allowing [Amber Electric](https://www.amber.com.au/) users to be more mindful of their energy usage during peak times and save money. Supports [LIFX Lights](https://www.lifx.com.au/) directly and other smart lights and smart plugs through [IFTTT Webhooks](https://ifttt.com/maker_webhooks).
 
 ### How to use
 ---
