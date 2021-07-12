@@ -140,9 +140,9 @@ async function activateIFTTTWebhookAsync(range, price) {
         actionsToPerform.push("price_change");
 
     if (IFTTT_POWER_ENABLED) {
-        if (price == IFTTT_POWER_ON_THRESHOLD) {
+        if (range == IFTTT_POWER_ON_THRESHOLD) {
             actionsToPerform.push("power_on");
-        } else if (price == IFTTT_POWER_OFF_THRESHOLD) {
+        } else if (range == IFTTT_POWER_OFF_THRESHOLD) {
             actionsToPerform.push("power_off");
         }
     }
